@@ -1,0 +1,20 @@
+<html>
+  <body style="font-family: Arial, sans-serif; font-size: 14px;">
+    <h2>Status: {{ status }}</h2>
+    <p>Data de envio: {{ data }}</p>
+
+    {% if erro %}
+      <p style="color: red;"><strong>Erro:</strong> {{ erro }}</p>
+    {% endif %}
+
+    {% if variaveis_html %}
+      <h3>Resumo</h3>
+      {{ variaveis_html | safe }}
+    {% endif %}
+
+    {% if tabelas_html %}
+      <h3>Relatórios</h3>
+      {{ tabelas_html | safe }}
+    {% endif %}
+  </body>
+</html>
