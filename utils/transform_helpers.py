@@ -1,17 +1,17 @@
 import pandas as pd
 import numpy as np
 
-def cleanup_currency(series: pd.Series) -> pd.Series:
+def cleanup_currency(coluna):
     """
     Converte strings monetárias como '1.234,56' para float32: 1234.56.
     Remove espaços, símbolos e adapta vírgula para ponto.
     """
     return (
-        series.astype(str)
-              .str.replace(r"[\s\xa0]", "", regex=True)
+        coluna.astype(str)
+              .str.replace("\xa0", "", regex=False)
+              .str.replace(" ", "", regex=False)
               .str.replace(",", ".", regex=False)
-              .str.replace(r"[^\d.]", "", regex=True)
-              .astype(np.float32)
+              .apply(lambda x: float(x) if x.replace('.', '', 1).isdigit() else 0.0)
     )
 
 
@@ -55,4 +55,46 @@ def replace_empty_with_nan(df: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
     """
     for col in cols:
         df[col] = df[col].replace("", np.nan)
+    return df
+
+def criar_tipo_campanha(df: pd.DataFrame) -> pd.DataFrame:
+    """Cria a coluna 'tipo campanha' com base no nome da campanha."""
+    df["tipo campanha"] = np.where(
+        df["Campaign Name"].str.contains("Facebook", case=False, na=False),
+        "Facebook",
+        np.where(
+            df["Campaign Name"].str.contains("Instagram", case=False, na=False),
+            "Instagram",
+            "Meta"
+        )
+    )
+    return df
+
+def padronizar_platform(df: pd.DataFrame) -> pd.DataFrame:
+    """Substitui valores de Platform para nomes padronizados."""
+    df["Platform"] = df["Platform"].replace({
+        "Audience Network": "Facebook",
+        "Messenger": "Facebook"
+    })
+    return df
+
+def traduzir_status(df: pd.DataFrame) -> pd.DataFrame:
+    """Traduz status da campanha para português."""
+    df["Campaign Status"] = df["Campaign Status"].replace({
+        "PAUSED": "Desativado",
+        "ACTIVE": "Ativo"
+    })
+    return df
+
+def corrigir_plataforma(df: pd.DataFrame) -> pd.DataFrame:
+    """Cria a coluna 'Plataforma Correta' com base no tipo de campanha."""
+    df["Plataforma Correta"] = np.where(
+        df["tipo campanha"] == "Meta",
+        df["Platform"],
+        np.where(
+            df["tipo campanha"] != df["Platform"],
+            df["tipo campanha"],
+            df["Platform"]
+        )
+    )
     return df
