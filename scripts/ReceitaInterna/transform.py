@@ -132,7 +132,37 @@ def processar_metricas_Meta(df_meta, ano_mes_atual):
         raise
     finally:
         gc.collect()
- 
+
+    # ////////////////////-----------------------------  Tratamento Meta Visão Mes -----------------------------\\\\\\\\\\\\\\\\\\\\\\\\\\\
+    
+    try:
+        # Faz o agrupamento com agregações mistas: sum e nunique
+        df_Meta_Mes_agroup = df_Meta.groupby(["Mes", "Account Name", "Campaign Name", "Plataforma Correta", "Campaign Status"], as_index=False).agg({
+            "Amount Spent": "sum",
+            "Impressions": "sum",
+            "Link Clicks": "sum",
+            "Reach": "sum",
+            "On-Facebook Leads": "sum",
+            "Leads": "sum",
+            "Ad Name": pd.Series.nunique,
+            "Ad Set Name": pd.Series.nunique
+        })
+
+        # (Opcional) Renomeia as colunas de contagem para deixar mais claro
+        df_Meta_Mes_agroup.rename(columns={
+            "Ad Name": "Unique Ad Names",
+            "Ad Set Name": "Unique Ad Set Names"
+        }, inplace=True)
+        logger.info(f"[Transform] - 📊 Agrupamento de {len(df_Meta_Mes_agroup)} registros do Meta visão mês concluído")
+
+    except Exception as e:
+        logger.error(f"[Transform] - Erro ao agrupar dados do Meta visão mês: {e}")
+        raise
+
+    finally:
+        gc.collect()
+
+    return df_Meta_agroup, df_Meta_Mes_agroup
 
     # ////////////////////-----------------------------  Tratamento Google -----------------------------\\\\\\\\\\\\\\\\\\\\\\\\\\\
 def processar_metricas_Google(df_google, ano_mes_atual):
@@ -146,7 +176,7 @@ def processar_metricas_Google(df_google, ano_mes_atual):
     except Exception as e:
         logger.error(f"[Transform] - Erro ao filtrar dados do Google: {e}")
         raise
-    return df_Meta, df_Google
+    return df_Google
 
 
 

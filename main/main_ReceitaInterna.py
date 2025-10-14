@@ -65,6 +65,8 @@ def main():
         raise
     finally:
         gc.collect()
+
+        
     #     # df_final = transform.processar_dados(df_meta, df_google, ano_mes_atual)
     #     # load.enviar_google_sheets(df_final, config.SHEET_DESTINO)
 
